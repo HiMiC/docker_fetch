@@ -77,6 +77,9 @@ find .  -type f -name "*.tgz" -execdir sh -c 'f=$(basename $1 .tgz);d=$(dirname 
 # nuget .nupkg
 find .  -type f -name "*.nupkg" -execdir sh -c 'f=$(basename $1 .nupkg);d=$(dirname $1);echo "$d/$f";unzip -d "$d/$f" $1' sh {} \;
 
+# pip install wheel
+find .  -type f -name "*.whl" -execdir sh -c 'f=$(basename $1 .whl);d=$(dirname $1);echo "$d/$f";wheel unpack -d "$d/$f" $1' sh {} \;
+
 # decompile .jar .class
 find .  -type f -iname "*.jar" -exec sh -c 'f=$(basename $1 .jar);d=$(dirname $1);echo "$d/$f";unzip -d $1.tmp $1' sh {} \;
 find .  -type f -iname "*.class" -execdir sh -c 'f=$(basename $1 .jar);d=$(dirname $1);echo "$d/$f";jad -d $(dirname $f) -s java -lnc $f' sh {} \;
