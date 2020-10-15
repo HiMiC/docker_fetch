@@ -59,8 +59,13 @@ python2.7 docker_image_fetch.py -u https://repo.SITE.com/repository/docker-repo/
 
 распаковать фаилы
 ```
+# .tar.gz
 find . -name '*.tar.gz' -exec tar -zxvf  {} \;
+# APK
+find . -type f -name '*.apk' -execdir apktool d  {} \;
 ```
+
+
 ищем
 
 ```
