@@ -1,4 +1,4 @@
-## Выкачивает все пакеты docker из docker-registry
+## 1) Выкачивает все пакеты docker из docker-registry
 
 ### Сделано автоматика по выкачке, чтобы руками не указываь версию и папку куда загрузить.
 
@@ -56,3 +56,23 @@ python2.7 docker_image_fetch.py -u https://repo.SITE.com/repository/docker-repo/
 ```
 find . -name '*.tar.gz' -exec tar -zxvf  {} \;
 ```
+ищем
+
+```
+find . -name '*.json' -exec grep -i 'password' {} \; -print
+find . -type f -name 'id_rsa' -o -name "auth.json"  -o -name "config.json" 
+```
+
+
+## 2) Выкачивает все пакеты из Sonatype Nexus Repository Manager
+
+NPM, bower, composer, nuget, pypi, yum, raw
+
+PS пакеты докера выкачивать через docker_image_fetch.py
+
+проверка https://repo.SITE.com/service/rest/v1/repositories
+
+```
+python2.7 sonatype_nexus_image_fetch.py -u https://repo.SITE.com/service/rest/v1/repositories
+```
+
