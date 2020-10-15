@@ -63,6 +63,8 @@ python2.7 docker_image_fetch.py -u https://repo.SITE.com/repository/docker-repo/
 find . -name '*.tar.gz' -exec tar -zxvf  {} \;
 # APK
 find . -type f -name '*.apk' -execdir apktool d  {} \;
+#RPM
+find .  -type f -iname "*.rpm" -exec sh -c 'f=$(basename $1 .rpm);d=$(dirname $1);echo "$d/$f";rpm2cpio {}  | cpio -D "$d/$f" -idmv' sh {} \;
 ```
 
 
