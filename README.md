@@ -65,6 +65,9 @@ find . -name '*.tar.gz' -exec tar -zxvf  {} \;
 find . -type f -name '*.apk' -execdir apktool d  {} \;
 #RPM
 find .  -type f -iname "*.rpm" -exec sh -c 'f=$(basename $1 .rpm);d=$(dirname $1);echo "$d/$f";rpm2cpio {}  | cpio -D "$d/$f" -idmv' sh {} \;
+# decompile .jar .class
+find .  -type f -iname "*.jar" -exec sh -c 'f=$(basename $1 .jar);d=$(dirname $1);echo "$d/$f";unzip -d $1.tmp $1' sh {} \;
+find .  -type f -iname "*.class" -execdir sh -c 'f=$(basename $1 .jar);d=$(dirname $1);echo "$d/$f";jad -d $(dirname $f) -s java -lnc $f' sh {} \;
 ```
 
 
