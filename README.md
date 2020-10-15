@@ -71,6 +71,9 @@ find .  -type f -iname "*.rpm" -exec sh -c 'f=$(basename $1 .rpm);d=$(dirname $1
 # ZIP
 find .  -type f -name "*.zip" -execdir sh -c 'f=$(basename $1 .zip);d=$(dirname $1);echo "$d/$f";unzip -d "$d/$f" $f' sh {} \;
 
+# TGZ
+find .  -type f -name "*.tgz" -execdir sh -c 'f=$(basename $1 .tgz);d=$(dirname $1);echo "$d/$f";mkdir -p "$d/$f";tar zxvf $1 -C ./"$d/$f" ' sh {} \;
+
 # nuget .nupkg
 find .  -type f -name "*.nupkg" -execdir sh -c 'f=$(basename $1 .nupkg);d=$(dirname $1);echo "$d/$f";unzip -d "$d/$f" $1' sh {} \;
 
