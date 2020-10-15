@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import os
 import json
 import optparse
@@ -5,12 +6,17 @@ import requests
 import time
 import os
 from datetime import datetime
+from urlparse import urlparse
+import sys
+from termcolor import colored, cprint
 
-# pulls Docker Images from unauthenticated docker registry api. 
-# and checks for docker misconfigurations. 
+# pulls Docker Images from unauthenticated docker registry api.
+# and checks for docker misconfigurations.
 
 apiversion = "v2"
 final_list_of_blobs = []
+
+DEBUG = 1
 
 # Disable insecure request warning
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
@@ -25,17 +31,26 @@ options, args = parser.parse_args()
 url = options.url
 
 
-def list_repos():
-    req = requests.get(url + "/" + apiversion + "/_catalog", verify=False)
+def list_repos(save_path):
+    url2 = url + "/" + apiversion + "/_catalog"
+    # cprint('GET: '+url2, 'green', 'on_red')
+    cprint('GET: ' + url2, 'green')
+    req = requests.get(url2, verify=False)
+    with open(save_path + '/_catalog', 'w') as test:
+        test.write(req.text)
     return json.loads(req.text)["repositories"]
 
 
-def find_tags(reponame):
+def find_tags(target_repo,reponame):
     print "SLEEP 10 TAG"
-    time.sleep(10)
-    req = requests.get(url + "/" + apiversion + "/" + reponame + "/tags/list", verify=False)
-    filename = "tags.json"
-    with open(reponame + "/" + filename, 'wb') as test:
+    url2 = url + "/" + apiversion + "/" + reponame + "/tags/list"
+    colored("GET:" + url2, 'blue')
+    if DEBUG:
+        time.sleep(10)
+    req = requests.get(url2, verify=False)
+    filename = target_repo + "/" + "tags.json"
+    colored("SAVE:" + filename, 'blue')
+    with open(filename, 'wb') as test:
         test.write(req.content)
     print "\n"
     data = json.loads(req.content)
@@ -43,12 +58,15 @@ def find_tags(reponame):
         return data["tags"]
 
 
-def list_blobs(reponame, tag):
+def list_blobs(target_repo,reponame, tag):
     print "SLEEP 10 BLOBS"
-    time.sleep(10)
-    req = requests.get(url + "/" + apiversion + "/" + reponame + "/manifests/" + tag, verify=False)
+    if DEBUG:
+        time.sleep(10)
+    url2 = url + "/" + apiversion + "/" + reponame + "/manifests/" + tag
+    print url2
+    req = requests.get(url2, verify=False)
     filename = "manifests.json"
-    with open(reponame + "/" + tag + "/" + filename, 'wb') as test:
+    with open(target_repo+ "/" + tag + "/" + filename, 'wb') as test:
         test.write(req.content)
     data = json.loads(req.content)
     if "fsLayers" in data:
@@ -67,44 +85,69 @@ def download_blobs(reponame, blobdigest, dirname):
 
 def main():
     if url is not "spam":
-        list_of_repos = list_repos()
-        print "\n[+] List of Repositories:\n"
-        for x in list_of_repos:
-            print x
-            if os.path.isdir(x):
-                print (x + " exist")
-            else:
-                os.makedirs(x)
+        o = urlparse(url)
+        host_name = o.netloc
+        print host_name
+        save_path = host_name + "/docker/"
+        cprint('save_path: ' + save_path, 'green')
+        if os.path.isdir(save_path):
+            print (save_path + " exist")
+        else:
+            os.makedirs(save_path)
 
-            # target_repo = raw_input("\nWhich repo would you like to download?:  ")
-            target_repo = x
+        list_of_repos = list_repos(save_path)
+        print list_of_repos
+        # exit()
+        print "\n[+] List of Repositories:\n"
+
+        for x in list_of_repos:
+            target_repo = save_path + x
+
+            cprint('target_repo: ' + target_repo, 'green')
+            if os.path.isdir(target_repo):
+                print (target_repo + " exist")
+            else:
+                os.makedirs(target_repo)
 
             print target_repo + '/success.txt'
             if not os.path.isfile(target_repo + '/success.txt'):
                 print "SLEEP 10 sec repo " + target_repo
-                time.sleep(10)
-                if target_repo in list_of_repos:
-                    tags = find_tags(target_repo)
+                if DEBUG:
+                    time.sleep(10)
+                if x in list_of_repos:
+
+                    cprint("111 target_repo: " + target_repo, 'red')
+                    tags = find_tags(target_repo,x)
+
+                    # print target_repo
+                    # print x
+                    # print tags
                     if tags is not None:
                         print "\n[+] Available Tags:\n"
                         for x2 in tags:
                             print x2
-                            if os.path.isdir(target_repo + '/' + x2):
-                                print (target_repo + '/' + x2 + " exist")
+                            target_repo_x2 = target_repo + '/' + x2
+                            cprint('target_repo_x2:' + target_repo_x2, 'green')
+                            if os.path.isdir(target_repo_x2):
+                                print (target_repo_x2 + " exist")
                             else:
-                                os.makedirs(target_repo + '/' + x2)
+                                os.makedirs(target_repo_x2)
 
                             # target_tag = raw_input("\nWhich tag would you like to download?:  ")
                             target_tag = x2
                             if target_tag in tags:
-                                dirname = target_repo + '/' + x2
+                                dirname = target_repo + '/' + target_tag
+                                cprint("dirname: " + dirname, 'red', 'on_green')
                                 if os.path.isdir(dirname):
                                     print (dirname + " exist")
                                 else:
+
                                     os.makedirs(dirname)
                                 print dirname + '/success.txt'
                                 if not os.path.isfile(dirname + '/success.txt'):
-                                    list_blobs(target_repo, target_tag)
+                                    print target_tag
+                                    list_blobs(target_repo,x, target_tag)
+                                    # list_blobs(target_repo, target_tag)
                                     # dirname = raw_input("\nGive a directory name:  ")
                                     # os.makedirs(dirname)
 
@@ -119,29 +162,35 @@ def main():
                                     with open(dirname + '/success.txt', 'w') as test:
                                         test.write(date_time)
                                     print "SLEEP 10 sec" + date_time
-                                    time.sleep(10)
+                                    if DEBUG:
+                                        time.sleep(10)
                                 else:
                                     print ("SUCCESS PROPUSK " + dirname)
                                     print "SLEEP 10 sec"
-                                    time.sleep(10)
+                                    if DEBUG:
+                                        time.sleep(10)
                             else:
-                                print "No such Tag Available. Qutting...."
+                                cprint("No such Tag Available. Qutting....", 'blue', 'on_red')
                     else:
-                        print "[+] No Tags Available. Quitting...."
+                        cprint("[+] No Tags Available. Quitting....",'blue','on_red')
 
                 else:
-                    print "1No such repo found. Quitting...."
+                    cprint("1No such repo found. Quitting....", 'blue', 'on_red')
                 now = datetime.now()
                 date_time = now.strftime("%m/%d/%Y, %H:%M:%S")
                 print target_repo + '/success.txt'
                 with open(target_repo + '/success.txt', 'w') as test:
                     test.write(date_time)
                 print "SLEEP 10 sec" + date_time
-                time.sleep(10)
+                if DEBUG:
+                    time.sleep(10)
+                cprint("3333  such repo LIST_OF_REPO", 'blue', 'on_red')
             else:
-                print "2No such repo found. Quitting...."
+                print ""
+                cprint("\n 2222 No such REPO found. Quitting....", 'blue', 'on_red')
     else:
-        print "\n[-] Please use -u option to define API Endpoint, e.g. https://IP:Port\n"
+        print ""
+        cprint("\n 1111 [-] Please use -u option to define API Endpoint, e.g. https://IP:Port\n", 'blue', 'on_red')
 
 
 if __name__ == "__main__":

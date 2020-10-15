@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import os
 import json
 import optparse
@@ -122,8 +123,12 @@ def main():
                                 print (path_dir_save + " exist")
                             else:
                                 os.makedirs(path_dir_save)
+                            file_save_path = x3['path']
 
-                            download_blobs(path_repo,x3['path'],x3['downloadUrl'])
+                            if x3['format'] == "nuget":
+                                file_save_path = x3['path']+".nupkg"
+
+                            download_blobs(path_repo,file_save_path,x3['downloadUrl'])
                             print "SLEEP 3 sec"
                             time.sleep(3)
 
