@@ -32,22 +32,69 @@ def list_repos():
     return json.loads(req.text)
 
 
+def geturl(url2, token=None):
+    # data_all_items = list()
+    data_all_items = []
+    print "11$$$$$$$$$$$"
+    print type(data_all_items)
+    print len(data_all_items)
+    print "11$$$$$$$$$$$"
+
+    if token:
+        url3 = url2 + "&continuationToken=" + token
+        print "get url3: " + url3
+        req = requests.get(url3, verify=False)
+        data = json.loads(req.content)
+    else:
+        print "get url2: " + url2
+        req = requests.get(url2, verify=False)
+        data = json.loads(req.content)
+
+    print "len: ", len(data['items'])
+
+    print "continuationToken: ", data['continuationToken']
+    if "items" in data:
+        data_all_items = data["items"]
+
+        if data['continuationToken'] is not None:
+            print "SLEEP 3"
+            # time.sleep(3)
+            data2 = geturl(url2, data['continuationToken'])
+
+            if len(data2):
+                data_all_items.extend(data2)
+    print "22$$$$$$$$$$$ START"
+    print type(data_all_items)
+    print len(data_all_items)
+    print "22$$$$$$$$$$$ END"
+    print "\r\n"
+    return data_all_items
+
+
 def find_tags(url, reponame):
     # print "SLEEP 10 TAG"
     # time.sleep(10)
     o3 = urlparse(url)
     host_name = o3.scheme + "://" + o3.netloc
     url2 = host_name + "/service/rest/v1/components?repository=" + reponame
+    # url2 = host_name + "/service/rest/v1/search?repository=" + reponame + "&name=*"
     print "get: " + url2
-    req = requests.get(url2, verify=False)
+
+    data = geturl(url2)
+    print ("-=-=-=-=-")
+    print type(data)
+    print len(data)
+    print ("-=-=-=-=-")
     filename = "tags.json"
     with open(o3.netloc + "/repository/" + reponame + "/" + filename, 'wb') as test:
-        test.write(req.content)
+        # test.write(req.content)
+        test.write(json.dumps(data, indent=4))
     print "\n"
-    data = json.loads(req.content)
+    # data = json.loads(req.content)
     # return data
-    if "items" in data:
-        return data["items"]
+    # if "items" in data:
+    #     return data["items"]
+    return data
 
 
 def list_blobs(reponame, tag):
@@ -114,10 +161,10 @@ def main():
                         for x3 in x2['assets']:
                             print x3['path']
 
-                            dir_path = os.path.dirname(os.path.realpath("/"+x3['path']))
-                            print "dir_path: " +dir_path
+                            dir_path = os.path.dirname(os.path.realpath("/" + x3['path']))
+                            print "dir_path: " + dir_path
 
-                            path_dir_save = path_repo+dir_path
+                            path_dir_save = path_repo + dir_path
                             print "path_dir_save: " + path_dir_save
                             if os.path.isdir(path_dir_save):
                                 print (path_dir_save + " exist")
@@ -126,12 +173,11 @@ def main():
                             file_save_path = x3['path']
 
                             if x3['format'] == "nuget":
-                                file_save_path = x3['path']+".nupkg"
+                                file_save_path = x3['path'] + ".nupkg"
 
-                            download_blobs(path_repo,file_save_path,x3['downloadUrl'])
+                            download_blobs(path_repo, file_save_path, x3['downloadUrl'])
                             print "SLEEP 3 sec"
                             time.sleep(3)
-
 
                         # exit()
                         # if os.path.isdir(target_repo + '/' + x2):
@@ -141,7 +187,7 @@ def main():
                     now = datetime.now()
                     date_time = now.strftime("%m/%d/%Y, %H:%M:%S")
                     with open(path_repo + '/success.txt', 'w') as test:
-                      test.write(date_time)
+                        test.write(date_time)
                     print "SLEEP 10 sec" + date_time
                     time.sleep(10)
                 else:
