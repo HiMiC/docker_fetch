@@ -19,6 +19,7 @@ apiversion = "v2"
 final_list_of_blobs = []
 
 DEBUG = 1
+SLEEP_TIME = 3
 
 # Disable insecure request warning
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
@@ -44,11 +45,12 @@ def list_repos(save_path):
 
 
 def find_tags(target_repo,reponame):
-    print "SLEEP 10 TAG"
+
     url2 = url + "/" + apiversion + "/" + reponame + "/tags/list"
     colored("GET:" + url2, 'blue')
     if DEBUG:
-        time.sleep(10)
+        print "SLEEP ",SLEEP_TIME," TAG"
+        time.sleep(SLEEP_TIME)
     req = requests.get(url2, verify=False)
     filename = target_repo + "/" + "tags.json"
     colored("SAVE:" + filename, 'blue')
@@ -61,9 +63,9 @@ def find_tags(target_repo,reponame):
 
 
 def list_blobs(target_repo,reponame, tag):
-    print "SLEEP 10 BLOBS"
+    print "SLEEP ",SLEEP_TIME," BLOBS"
     if DEBUG:
-        time.sleep(10)
+        time.sleep(SLEEP_TIME)
     url2 = url + "/" + apiversion + "/" + reponame + "/manifests/" + tag
     print url2
     req = requests.get(url2, verify=False)
@@ -113,9 +115,9 @@ def main():
 
             print target_repo + '/success.txt'
             if not os.path.isfile(target_repo + '/success.txt'):
-                print "SLEEP 10 sec repo " + target_repo
+                print "SLEEP ",SLEEP_TIME," sec repo " + target_repo
                 if DEBUG:
-                    time.sleep(10)
+                    time.sleep(SLEEP_TIME)
                 if x in list_of_repos:
 
                     cprint("111 target_repo: " + target_repo, 'red')
@@ -163,14 +165,14 @@ def main():
                                     print dirname + '/success.txt'
                                     with open(dirname + '/success.txt', 'w') as test:
                                         test.write(date_time)
-                                    print "SLEEP 10 sec" + date_time
+                                    print "SLEEP ",SLEEP_TIME," sec" + date_time
                                     if DEBUG:
-                                        time.sleep(10)
+                                        time.sleep(SLEEP_TIME)
                                 else:
                                     print ("SUCCESS PROPUSK " + dirname)
-                                    print "SLEEP 10 sec"
+                                    print "SLEEP ",SLEEP_TIME," sec"
                                     if DEBUG:
-                                        time.sleep(10)
+                                        time.sleep(SLEEP_TIME)
                             else:
                                 cprint("No such Tag Available. Qutting....", 'blue', 'on_red')
                     else:
@@ -183,9 +185,9 @@ def main():
                 print target_repo + '/success.txt'
                 with open(target_repo + '/success.txt', 'w') as test:
                     test.write(date_time)
-                print "SLEEP 10 sec" + date_time
+                print "SLEEP ", SLEEP_TIME," sec" + date_time
                 if DEBUG:
-                    time.sleep(10)
+                    time.sleep(SLEEP_TIME)
                 cprint("3333  such repo LIST_OF_REPO", 'blue', 'on_red')
             else:
                 print ""
