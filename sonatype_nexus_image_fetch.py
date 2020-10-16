@@ -31,6 +31,12 @@ def list_repos():
     req = requests.get(url, verify=False)
     return json.loads(req.text)
 
+def create_path(path):
+    if os.path.isdir(path):
+        print (path + " exist")
+    else:
+        os.makedirs(path)
+
 
 def geturl(url2, token=None):
     # data_all_items = list()
@@ -136,19 +142,17 @@ def main():
         o = urlparse(url)
         host_name = o.netloc
         print o.netloc
-        if os.path.isdir(host_name):
-            print (host_name + " exist")
-        else:
-            os.makedirs(host_name)
+
+        # создаем папку если нет
+        create_path(host_name)
 
         for x in list_of_repos:
             o2 = urlparse(x['url'])
             path_repo = o2.netloc + o2.path
             print "path_repo: " + path_repo
-            if os.path.isdir(path_repo):
-                print (path_repo + " exist")
-            else:
-                os.makedirs(path_repo)
+
+            # создаем папку если нет
+            create_path(path_repo)
 
             print path_repo + '/success.txt'
             # exit()
@@ -166,24 +170,37 @@ def main():
 
                             path_dir_save = path_repo + dir_path
                             print "path_dir_save: " + path_dir_save
-                            if os.path.isdir(path_dir_save):
-                                print (path_dir_save + " exist")
-                            else:
-                                os.makedirs(path_dir_save)
+
+                            # создаем папку если нет
+                            create_path(path_dir_save)
+
                             file_save_path = x3['path']
 
                             if x3['format'] == "nuget":
+                                # формат открывается в zip
                                 file_save_path = x3['path'] + ".nupkg"
-
-                            download_blobs(path_repo, file_save_path, x3['downloadUrl'])
-                            print "SLEEP 3 sec"
-                            time.sleep(3)
+                            print "CHECK file: " + path_repo + "/" + file_save_path + '_success.txt'
+                            if not os.path.isfile(path_repo + "/" + file_save_path + '_success.txt'):
+                                # скачиваем
+                                download_blobs(path_repo, file_save_path, x3['downloadUrl'])
+                                # скачалось успешно
+                                now = datetime.now()
+                                date_time = now.strftime("%m/%d/%Y, %H:%M:%S")
+                                with open(path_repo + "/" + file_save_path + '_success.txt', 'w') as test:
+                                    test.write(date_time)
+                                print "SLEEP 3 sec"
+                                time.sleep(3)
+                            else:
+                                print "PROPUSK: " + path_repo + "/" + file_save_path
 
                         # exit()
                         # if os.path.isdir(target_repo + '/' + x2):
                         #     print (target_repo + '/' + x2 + " exist")
                         # else:
                         #     os.makedirs(target_repo + '/' + x2)
+                        # создаем папку если нет
+                        # create_path(target_repo + '/' + x2)
+
                     now = datetime.now()
                     date_time = now.strftime("%m/%d/%Y, %H:%M:%S")
                     with open(path_repo + '/success.txt', 'w') as test:

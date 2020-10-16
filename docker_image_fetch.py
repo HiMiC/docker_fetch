@@ -1,4 +1,6 @@
+#!/usr/bin/env python2.7
 # -*- coding: utf-8 -*-
+
 import os
 import json
 import optparse
@@ -26,7 +28,7 @@ requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 parser = optparse.OptionParser()
 parser.add_option('-u', '--url', action="store", dest="url",
                   help="URL Endpoint for Docker Registry API v2. Eg https://IP:Port",
-                  default="none")
+                  default="spam")
 options, args = parser.parse_args()
 url = options.url
 
