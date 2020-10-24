@@ -63,6 +63,10 @@ def find_tags(target_repo,reponame):
 
 
 def list_blobs(target_repo,reponame, tag):
+
+#    global final_list_of_blobs
+#    final_list_of_blobs = []
+
     print "SLEEP ",SLEEP_TIME," BLOBS"
     if DEBUG:
         time.sleep(SLEEP_TIME)
@@ -81,7 +85,9 @@ def list_blobs(target_repo,reponame, tag):
 
 
 def download_blobs(reponame, blobdigest, dirname):
-    req = requests.get(url + "/" + apiversion + "/" + reponame + "/blobs/sha256:" + blobdigest, verify=False)
+    url2 = url + "/" + apiversion + "/" + reponame + "/blobs/sha256:" + blobdigest
+    print url2
+    req = requests.get(url2, verify=False)
     filename = "%s.tar.gz" % blobdigest
     with open(dirname + "/" + filename, 'wb') as test:
         test.write(req.content)
@@ -150,6 +156,9 @@ def main():
                                 print dirname + '/success.txt'
                                 if not os.path.isfile(dirname + '/success.txt'):
                                     print target_tag
+
+		                    global final_list_of_blobs
+		                    final_list_of_blobs = []
                                     list_blobs(target_repo,x, target_tag)
                                     # list_blobs(target_repo, target_tag)
                                     # dirname = raw_input("\nGive a directory name:  ")
@@ -158,7 +167,8 @@ def main():
                                     print "Now sit back and relax. I will download all the blobs for you in %s directory. \nOpen the directory, unzip all the files and explore like a Boss. " % dirname
                                     for x3 in final_list_of_blobs:
                                         print "\n[+] Downloading Blob: %s" % x3
-                                        download_blobs(target_repo, x3, dirname)
+                                        download_blobs(x, x3, dirname)
+#                                        download_blobs(target_repo, x3, dirname)
 
                                     now = datetime.now()
                                     date_time = now.strftime("%m/%d/%Y, %H:%M:%S")
