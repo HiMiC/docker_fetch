@@ -86,7 +86,8 @@ def list_blobs(target_repo,reponame, tag):
 
 def download_blobs(reponame, blobdigest, dirname):
     url2 = url + "/" + apiversion + "/" + reponame + "/blobs/sha256:" + blobdigest
-    print url2
+    cprint("download blobs: " + url2, 'blue')
+#    print url2
     req = requests.get(url2, verify=False)
     filename = "%s.tar.gz" % blobdigest
     with open(dirname + "/" + filename, 'wb') as test:
